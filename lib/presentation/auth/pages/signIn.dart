@@ -56,7 +56,7 @@ class SignInPage extends StatelessWidget {
         ));
   }
 
-  Widget textField(BuildContext context, title) {
+  Widget textField(BuildContext context, title,) {
     return TextField(
         decoration: InputDecoration(
           hintText: title,
@@ -89,7 +89,7 @@ class SignInPage extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context)=>const SignupPage(), ));
+                MaterialPageRoute(builder: (context)=> SignupPage(), ));
           },
           child: const Text(
             'Register Now',

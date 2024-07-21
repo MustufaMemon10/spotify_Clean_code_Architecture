@@ -5,11 +5,17 @@ import 'package:spotifyclone/common/helpers/is_dark_mode.dart';
 import 'package:spotifyclone/common/widgets/appbar/app_bar.dart';
 import 'package:spotifyclone/common/widgets/basic_app_button.dart';
 import 'package:spotifyclone/core/configs/assets/app_vectors.dart';
+import 'package:spotifyclone/data/models/auth/create_user_req.dart';
+import 'package:spotifyclone/domain/usecases/auth/signup.dart';
 import 'package:spotifyclone/presentation/auth/pages/signIn.dart';
+import 'package:spotifyclone/presentation/root/pages/root.dart';
+import 'package:spotifyclone/service_locator.dart';
 
 class SignupPage extends StatelessWidget {
-  const SignupPage({super.key});
-
+   SignupPage({super.key});
+  final TextEditingController _fullName = TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
   @override
   Widget build(BuildContext context) {
      bool obscure = true;
@@ -31,19 +37,32 @@ class SignupPage extends StatelessWidget {
             const SizedBox(
               height: 50,
             ),
-            textField(context, 'Full Name'),
+            textField(context, 'Full Name',_fullName),
             const SizedBox(
               height: 16,
             ),
-            textField(context, 'Enter Email'),
+            textField(context, 'Enter Email',_email),
             const SizedBox(
               height: 16,
             ),
-            passwordField(context, 'Password',obscure),
+            passwordField(context, 'Password',obscure,_password),
             const SizedBox(
               height: 16,
             ),
-            BasicAppButton(onPressed: () {}, title: 'Create Account'),
+            BasicAppButton(onPressed: () async{
+              var result = await sl<SignupUseCase>().call(
+                params: CreateUserReq(fullName: _fullName.text.trim(), email: _email.text.trim(), password: _password.text.trim()
+                )
+              );
+              result.fold(
+              (l){
+                var snackBar =  SnackBar(content: Text(l),behavior: SnackBarBehavior.floating,);
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
+              },
+              (r){
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context)=>const RootPage() ), (route) => false);
+              });
+            }, title: 'Create Account'),
             const Spacer(),
             signinText(context),
           ],
@@ -60,15 +79,17 @@ class SignupPage extends StatelessWidget {
         ));
   }
 
-  Widget textField(BuildContext context, title) {
+  Widget textField(BuildContext context, title,TextEditingController controller) {
     return TextField(
+      controller: controller,
         decoration: InputDecoration(
       hintText: title,
     ).applyDefaults(Theme.of(context).inputDecorationTheme));
   }
 
-  Widget passwordField(BuildContext context, title, bool obscure) {
+  Widget passwordField(BuildContext context, title, bool obscure,TextEditingController controller) {
     return TextField(
+        controller: controller,
         obscureText: obscure,
         decoration: InputDecoration(
           hintText: title,

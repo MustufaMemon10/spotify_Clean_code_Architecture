@@ -4,24 +4,34 @@ import 'package:spotifyclone/data/models/auth/create_user_req.dart';
 import 'package:spotifyclone/data/models/auth/signIn_user.dart';
 
 abstract class AuthFirebaseService {
+
   Future<Either> signup(CreateUserReq createUserReq);
 
-    Future<Either> signin(SignInUser signInUser);
+  Future<Either> signin(SignInUser signInUser);
+
 }
 
 class AuthFirebaseServiceImpl extends AuthFirebaseService {
+
+
   @override
-  Future<Either> signin(SignInUser signInUser) async{
+  Future<Either> signin(SignInUser signInUser) async {
     try {
-      FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: signInUser.email, password: signInUser.password);
-      return const Right('SignIn was Successful');
-    } on FirebaseAuthException catch (e) {
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: signInUser.email,
+          password:signInUser.password
+      );
+
+      return const Right('Signin was Successful');
+
+    } on FirebaseAuthException catch(e) {
       String message = '';
-      if (e.code == 'invalid-email') {
-        message = 'Not user found for that email.';
+
+      if(e.code == 'invalid-email') {
+        message = 'Not user found for that email';
       } else if (e.code == 'invalid-credential') {
-        message = 'Wrong email and password';
+        message = 'Wrong password provided for that user';
       }
       return Left(message);
     }
@@ -30,17 +40,23 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<Either> signup(CreateUserReq createUserReq) async {
     try {
-      FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: createUserReq.email, password: createUserReq.password);
-      return Right('Signup is Succesfull');
-    } on FirebaseAuthException catch (e) {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: createUserReq.email,
+          password:createUserReq.password
+      );
+
+      return const Right('Signup was Successful');
+
+    } on FirebaseAuthException catch(e) {
       String message = '';
-      if (e.code == 'weak-password') {
+      print(e.code.toString());
+      if(e.code == 'weak-password') {
         message = 'The password provided is too weak';
       } else if (e.code == 'email-already-in-use') {
-        message = 'An Account already exists with that email.';
+        message = 'An account already exists with that email.';
       }
       return Left(message);
     }
   }
+
 }

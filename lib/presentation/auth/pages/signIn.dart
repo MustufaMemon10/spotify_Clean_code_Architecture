@@ -5,15 +5,22 @@ import 'package:spotifyclone/common/helpers/is_dark_mode.dart';
 import 'package:spotifyclone/common/widgets/appbar/app_bar.dart';
 import 'package:spotifyclone/common/widgets/basic_app_button.dart';
 import 'package:spotifyclone/core/configs/assets/app_vectors.dart';
+import 'package:spotifyclone/data/models/auth/signIn_user.dart';
+import 'package:spotifyclone/domain/usecases/auth/signin.dart';
 import 'package:spotifyclone/presentation/auth/pages/signup.dart';
+import 'package:spotifyclone/presentation/root/pages/root.dart';
+import 'package:spotifyclone/service_locator.dart';
 
 class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
+  SignInPage({super.key});
+
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     bool obscure = true;
-    return  Scaffold(
+    return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: BasicAppBar(
         title: SvgPicture.asset(
@@ -31,15 +38,36 @@ class SignInPage extends StatelessWidget {
             const SizedBox(
               height: 50,
             ),
-            textField(context, 'Enter username or email'),
+            textField(context, 'Enter username or email', _email),
             const SizedBox(
               height: 16,
             ),
-            passwordField(context, 'Password',obscure),
+            passwordField(context, 'Password', obscure, _password),
             const SizedBox(
               height: 16,
             ),
-            BasicAppButton(onPressed: () {}, title: 'Sign In'),
+            BasicAppButton(
+                onPressed: () async {
+                  var result = await sl<SignInUseCase>().call(
+                      params: SignInUser(
+                          email: _email.text.toString(),
+                          password: _password.text.toString()));
+                  result.fold((l) {
+                    var snackbar = SnackBar(
+                      content: Text(l),
+                      behavior: SnackBarBehavior.floating,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackbar);
+                  }, (r) {
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                const RootPage()),
+                        (route) => false);
+                  });
+                },
+                title: 'Sign In'),
             const Spacer(),
             signinText(context),
           ],
@@ -56,16 +84,20 @@ class SignInPage extends StatelessWidget {
         ));
   }
 
-  Widget textField(BuildContext context, title,) {
+  Widget textField(
+      BuildContext context, title, TextEditingController controller) {
     return TextField(
+        controller: controller,
         decoration: InputDecoration(
           hintText: title,
         ).applyDefaults(Theme.of(context).inputDecorationTheme));
   }
 
-  Widget passwordField(BuildContext context, title, bool obscure) {
+  Widget passwordField(BuildContext context, title, bool obscure,
+      TextEditingController controller) {
     return TextField(
         obscureText: obscure,
+        controller: controller,
         decoration: InputDecoration(
           hintText: title,
           suffixIcon: IconButton(
@@ -89,7 +121,9 @@ class SignInPage extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context)=> SignupPage(), ));
+                MaterialPageRoute(
+                  builder: (context) => SignupPage(),
+                ));
           },
           child: const Text(
             'Register Now',

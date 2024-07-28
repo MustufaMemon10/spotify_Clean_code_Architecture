@@ -5,20 +5,70 @@ import 'package:spotifyclone/common/helpers/is_dark_mode.dart';
 import 'package:spotifyclone/common/widgets/appbar/app_bar.dart';
 import 'package:spotifyclone/common/widgets/basic_app_button.dart';
 import 'package:spotifyclone/core/configs/assets/app_vectors.dart';
+import 'package:spotifyclone/core/configs/theme/app_colors.dart';
 import 'package:spotifyclone/data/models/auth/create_user_req.dart';
 import 'package:spotifyclone/domain/usecases/auth/signup.dart';
 import 'package:spotifyclone/presentation/auth/pages/signIn.dart';
+import 'package:spotifyclone/presentation/auth/widgets/textfield.dart';
 import 'package:spotifyclone/presentation/root/pages/root.dart';
 import 'package:spotifyclone/service_locator.dart';
 
-class SignupPage extends StatelessWidget {
-   SignupPage({super.key});
-  final TextEditingController _fullName = TextEditingController();
-  final TextEditingController _email = TextEditingController();
-  final TextEditingController _password = TextEditingController();
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
+   TextEditingController _fullName = TextEditingController();
+
+   TextEditingController _email = TextEditingController();
+
+   TextEditingController _password = TextEditingController();
+
+  bool obscure = true;
+  bool _isLoading = false;
+
+ Future<void> _handleSignup() async {
+    if (_fullName.text.isNotEmpty && _email.text.isNotEmpty && _password.text.isNotEmpty) {
+      setState(() {
+        _isLoading = true; // Start loading
+      });
+      var result = await sl<SignupUseCase>().call(
+        params: CreateUserReq(
+          fullName: _fullName.text.trim(),
+          email: _email.text.trim(),
+          password: _password.text.trim(),
+        ),
+      );
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+      result.fold((l) {
+        var snackBar = SnackBar(
+          content: Text(l),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }, (r) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (BuildContext context) => const RootPage()),
+          (route) => false,
+        );
+      });
+    } else {
+      // Show an error message if fields are empty
+      var snackBar = const SnackBar(
+        content: Text('Please fill in all fields'),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
+  }
   @override
   Widget build(BuildContext context) {
-     bool obscure = true;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: BasicAppBar(
@@ -37,32 +87,41 @@ class SignupPage extends StatelessWidget {
             const SizedBox(
               height: 50,
             ),
-            textField(context, 'Full Name',_fullName),
+            CustomTextField(title: 'Full Name', controller: _fullName),
             const SizedBox(
               height: 16,
             ),
-            textField(context, 'Enter Email',_email),
+            CustomTextField(title: 'Email', controller: _email),
             const SizedBox(
               height: 16,
             ),
-            passwordField(context, 'Password',obscure,_password),
+          TextField(
+        cursorWidth: 1,
+        textInputAction: TextInputAction.go,
+        cursorColor: context.isDarkMode
+            ? Colors.white.withOpacity(0.6)
+            : Colors.black.withOpacity(0.6),
+        obscureText: obscure,
+        controller: _password,
+        decoration: InputDecoration(
+          hintText: 'Password',
+          suffixIcon: IconButton(
+              onPressed: ()=> setState(() {
+                obscure = !obscure;
+              }),
+              icon: Icon(obscure ? Iconsax.eye_slash : Iconsax.eye)),
+        ).applyDefaults(Theme.of(context).inputDecorationTheme)),
             const SizedBox(
               height: 16,
             ),
-            BasicAppButton(onPressed: () async{
-              var result = await sl<SignupUseCase>().call(
-                params: CreateUserReq(fullName: _fullName.text.trim(), email: _email.text.trim(), password: _password.text.trim()
-                )
-              );
-              result.fold(
-              (l){
-                var snackBar =  SnackBar(content: Text(l),behavior: SnackBarBehavior.floating,);
-                ScaffoldMessenger.of(context).showSnackBar(snackBar);
-              },
-              (r){
-                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (BuildContext context)=>const RootPage() ), (route) => false);
-              });
-            }, title: 'Create Account'),
+            _isLoading // Show loading indicator
+                ? const CircularProgressIndicator(
+                  color: AppColors.primary,
+                ) 
+                : BasicAppButton(
+                    onPressed: _handleSignup,
+                    title: 'Create Account',
+                  ),
             const Spacer(),
             signinText(context),
           ],
@@ -79,23 +138,23 @@ class SignupPage extends StatelessWidget {
         ));
   }
 
-  Widget textField(BuildContext context, title,TextEditingController controller) {
-    return TextField(
-      controller: controller,
-        decoration: InputDecoration(
-      hintText: title,
-    ).applyDefaults(Theme.of(context).inputDecorationTheme));
-  }
 
-  Widget passwordField(BuildContext context, title, bool obscure,TextEditingController controller) {
+
+  Widget passwordField(BuildContext context, title, bool obscure,
+      TextEditingController controller, void Function() onTap) {
     return TextField(
-        controller: controller,
+        cursorWidth: 1,
+        textInputAction: TextInputAction.go,
+        cursorColor: context.isDarkMode
+            ? Colors.white.withOpacity(0.6)
+            : Colors.black.withOpacity(0.6),
         obscureText: obscure,
+        controller: controller,
         decoration: InputDecoration(
           hintText: title,
           suffixIcon: IconButton(
-              onPressed: () {},
-              icon: Icon(obscure ? Iconsax.eye : Iconsax.eye_slash)),
+              onPressed: onTap,
+              icon: Icon(obscure ? Iconsax.eye_slash : Iconsax.eye)),
         ).applyDefaults(Theme.of(context).inputDecorationTheme));
   }
 
@@ -113,8 +172,10 @@ class SignupPage extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.pushReplacement(
-              context,
-                MaterialPageRoute(builder: (context)=> SignInPage(), ));
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SignInPage(),
+                ));
           },
           child: const Text(
             'sign In',

@@ -22,7 +22,6 @@ dependencies:
   firebase_auth:
   get_it:
   dartz:
-  device_preview:
   iconsax: ^0.0.8
 
 dev_dependencies:

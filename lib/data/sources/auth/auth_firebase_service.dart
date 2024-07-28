@@ -7,32 +7,33 @@ abstract class AuthFirebaseService {
 
   Future<Either> signup(CreateUserReq createUserReq);
 
-  Future<Either> signin(SignInUser signInUser);
+  Future<Either> signin(SignInUser signinUserReq);
 
 }
 
 class AuthFirebaseServiceImpl extends AuthFirebaseService {
 
-
   @override
-  Future<Either> signin(SignInUser signInUser) async {
-    try {
+  Future<Either> signin(SignInUser signinUserReq) async {
+     try {
 
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: signInUser.email,
-          password:signInUser.password
+        email: signinUserReq.email,
+        password:signinUserReq.password
       );
 
       return const Right('Signin was Successful');
 
     } on FirebaseAuthException catch(e) {
       String message = '';
-
+      
       if(e.code == 'invalid-email') {
         message = 'Not user found for that email';
       } else if (e.code == 'invalid-credential') {
         message = 'Wrong password provided for that user';
       }
+
+
       return Left(message);
     }
   }
@@ -40,23 +41,28 @@ class AuthFirebaseServiceImpl extends AuthFirebaseService {
   @override
   Future<Either> signup(CreateUserReq createUserReq) async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: createUserReq.email,
-          password:createUserReq.password
-      );
 
+     var data =  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: createUserReq.email,
+        password:createUserReq.password
+      );
+      
       return const Right('Signup was Successful');
 
     } on FirebaseAuthException catch(e) {
       String message = '';
-      print(e.code.toString());
+      
       if(e.code == 'weak-password') {
         message = 'The password provided is too weak';
       } else if (e.code == 'email-already-in-use') {
         message = 'An account already exists with that email.';
       }
+
+
       return Left(message);
     }
   }
+  
 
+  
 }

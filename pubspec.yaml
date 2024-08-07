@@ -22,7 +22,11 @@ dependencies:
   firebase_auth:
   get_it:
   dartz:
+  cloud_firestore:
+  google_sign_in:
   iconsax: ^0.0.8
+  device_preview: ^1.2.0
+  just_audio:
 
 dev_dependencies:
   flutter_test:

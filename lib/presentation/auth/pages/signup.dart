@@ -10,7 +10,7 @@ import 'package:spotifyclone/data/models/auth/create_user_req.dart';
 import 'package:spotifyclone/domain/usecases/auth/signup.dart';
 import 'package:spotifyclone/presentation/auth/pages/signIn.dart';
 import 'package:spotifyclone/presentation/auth/widgets/textfield.dart';
-import 'package:spotifyclone/presentation/root/pages/root.dart';
+import 'package:spotifyclone/presentation/home/pages/home.dart';
 import 'package:spotifyclone/service_locator.dart';
 
 class SignupPage extends StatefulWidget {
@@ -51,10 +51,13 @@ class _SignupPageState extends State<SignupPage> {
           behavior: SnackBarBehavior.floating,
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
+         setState(() {
+        _isLoading = false; // Start loading
+      });
       }, (r) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (BuildContext context) => const RootPage()),
+          MaterialPageRoute(builder: (BuildContext context) => const HomePage()),
           (route) => false,
         );
       });
@@ -71,7 +74,7 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: BasicAppBar(
+      appBar: BasicAppbar(
         title: SvgPicture.asset(
           AppVectors.logo,
           height: 40,

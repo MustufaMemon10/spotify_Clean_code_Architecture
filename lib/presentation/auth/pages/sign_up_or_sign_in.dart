@@ -17,7 +17,7 @@ class SignUpOrSignIn extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          BasicAppBar(),
+          const BasicAppbar(),
           Align(
               alignment: Alignment.topRight,
               child: SvgPicture.asset(AppVectors.topPattern)),
@@ -69,7 +69,7 @@ class SignUpOrSignIn extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) =>  SignupPage(),
+                                    builder: (context) =>  const SignupPage(),
                                   ),
                                 );
                               },
@@ -84,7 +84,7 @@ class SignUpOrSignIn extends StatelessWidget {
                               onPressed: () {Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  SignInPage(),
+                                  builder: (context) =>  const SignInPage(),
                                 ),
                               );},
                               child: Text(

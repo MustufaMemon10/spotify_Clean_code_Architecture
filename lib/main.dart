@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:spotifyclone/core/configs/theme/app_theme.dart';
 import 'package:spotifyclone/firebase_options.dart';
 import 'package:spotifyclone/presentation/choose_mode/bloc/theme_cubit.dart';
+import 'package:spotifyclone/presentation/home/pages/home.dart';
 import 'package:spotifyclone/presentation/splash/pages/splash.dart';
 import 'package:spotifyclone/service_locator.dart';
 
@@ -19,10 +20,11 @@ Future<void> main() async {
   );
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
-await Firebase.initializeApp();
+  );
   await initializeDependencies();
-  runApp(const MyApp());
+   runApp(
+    const MyApp(),
+   );
 }
 
 class MyApp extends StatelessWidget {
@@ -35,7 +37,7 @@ class MyApp extends StatelessWidget {
       providers: [BlocProvider(create: (_) => ThemeCubit())],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, mode) => MaterialApp(
-          title: 'Spotify Clone',
+          title: 'Spotify',
           debugShowCheckedModeBanner: false,
           darkTheme: AppTheme.darkTheme,
           theme: AppTheme.lightTheme,
